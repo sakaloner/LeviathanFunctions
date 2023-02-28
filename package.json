@@ -1,0 +1,9 @@
+{
+  "name": "leviathan-functions",
+  "version": "1.0.0",
+  "description": "functions for Leviathan",
+  "main": "main.ts",
+  "repository": "git@github.com:sakaloner/LeviathanFunctions.git",
+  "author": "sakaloner <andresf40y0@gmail.com>",
+  "license": "MIT"
+}
