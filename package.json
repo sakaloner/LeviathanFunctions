@@ -2,7 +2,7 @@
   "name": "leviathan-functions",
   "version": "1.1.0",
   "description": "functions for leviathan",
-  "main": "./ts_files/funcs",
+  "main": "main.ts",
   "repository": "git@github.com:sakaloner/LeviathanFunctions.git",
   "author": "sakaloner <andresf40y0@gmail.com>",
   "license": "MIT",
@@ -17,5 +17,6 @@
   },
   "scripts": {
     "test": "jest"
-  }
+  },
+  "private": true
 }
