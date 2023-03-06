@@ -27,8 +27,14 @@ export const getDamage = (level:number, strength:number, troops:number, ) => {
 };
 
 
-export const reductionPF = (coordination:number, pro:boolean) => {
-  let result = 0.1 - (coordination/20000)
+export const reductionProductivity = (coordination:number, pro:boolean, happiness:number) => {
+  let result = 0.1 - (coordination/20000)- (0.001*happiness)
+  if(pro) return  parseFloat((result  - 0.02).toFixed(3));
+  return parseFloat(result.toFixed(3));
+}
+
+export const reductionFatigue = (coordination:number, pro:boolean, healthSystem:number) => {
+  let result = 0.1 - (coordination/20000) - (0.001*healthSystem)
   if(pro) return  parseFloat((result  - 0.02).toFixed(3));
   return parseFloat(result.toFixed(3));
 }
@@ -49,12 +55,13 @@ export const lvlStatSecs = (strenght:number, education:number) => {
 }
 
 export const productionResources = (resourceType:string, level:number, education:number, factoryLvl:number) => {
+  console.log('entra en la ecuacion almenos')
   if (resourceType==="diamond") {
     const result = Math.floor((level/30)+(education/35)+ (factoryLvl/30))
     if (result > 1) return result;
     return 1;
   }
-  const naturalResources = ["iron", "copper", "aluminium", "uranium", "gold", "silver", "titanium", "platinum", "zinc", "lead", "nickel", "tin", "cobalt", "magnesium", "tungsten", "lithium", "manganese", "chromium", "boron", "silicon", "arsenic", "selenium", "tellurium", "polonium", "radium", "radon", "thorium", "protactinium", "uranium", "neptunium", "plutonium", "americium", "curium", "berkelium", "californium", "einsteinium", "fermium", "mendelevium", "nobelium", "lawrencium", "rutherfordium", "dubnium", "seaborgium", "bohrium", "hassium", "meitnerium", "darmstadtium", "roentgenium", "copernicium", "nihonium", "flerovium", "moscovium", "livermorium", "tennessine", "oganesson"]
+  const naturalResources = ["iron", "coal", "oil", "water"]
   if (naturalResources.includes(resourceType) ) {
     const result = Math.floor((level/3)+(education/4)+ (factoryLvl/3))
     if (result > 1) return result;
@@ -70,8 +77,9 @@ export const productionResources = (resourceType:string, level:number, education
     if (result > 1) return result;
     return 1;
   }
-  const airWeapons = ["missile,", "jet"]
+  const airWeapons = ["missile", "jet"]
   if (airWeapons.includes(resourceType) ) {
+    console.log('entro a las armas estas')
     const result = Math.floor((level/20)+(education/25)+ (factoryLvl/20))
     if (result > 1) return result;
     return 1;

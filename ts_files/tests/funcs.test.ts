@@ -1,4 +1,4 @@
-import { getCurrentLvl, getLvlToExp, qtyTroops, getDamage, reductionPF, expPerWork, costGun, lvlStatSecs, productionResources } from "../funcs";
+import { getCurrentLvl, getLvlToExp, qtyTroops, getDamage, reductionProductivity, reductionFatigue, expPerWork, costGun, lvlStatSecs, productionResources } from "../funcs";
 
 
 test("getCurrentLvl", () => {
@@ -40,14 +40,20 @@ test("getDamage", () => {
     expect(getDamage(52,200,10)).toBe(28);
 })
 
-test("reductionPF", () => {
-    expect(reductionPF(20, true)).toBe(0.079);
-    expect(reductionPF(500, true)).toBe(0.055);
-    expect(reductionPF(40, false)).toBe(0.098);
-    expect(reductionPF(150, false)).toBe(0.092);
-    expect(reductionPF(200, true)).toBe(0.07);
+test("reductionProductivity", () => {
+    expect(reductionProductivity(20, true, 3)).toBe(0.076);
+    expect(reductionProductivity(500, true,0)).toBe(0.055);
+    expect(reductionProductivity(40, false,10)).toBe(0.088);
+    expect(reductionProductivity(150, false, 5)).toBe(0.087);
+    expect(reductionProductivity(200, true, 7)).toBe(0.063);
 })
-
+test("reductionFatigue", () => {
+    expect(reductionFatigue(20, true, 3)).toBe(0.076);
+    expect(reductionFatigue(500, true,0)).toBe(0.055);
+    expect(reductionFatigue(40, false,10)).toBe(0.088);
+    expect(reductionFatigue(150, false,5)).toBe(0.087);
+    expect(reductionFatigue(200, true, 7)).toBe(0.063);
+})
 test("expPerWork", () => {
     expect(expPerWork(3,1)).toBe(1);
     expect(expPerWork(52,500)).toBe(41);
@@ -70,4 +76,16 @@ test("lvlStatSecs", () => {
     expect(lvlStatSecs(400,20)).toBe(119400);
     expect(lvlStatSecs(150,150)).toBe(4500);
     expect(lvlStatSecs(200,200)).toBe(24000);
+})
+
+test("productionResources", () => {
+    expect(productionResources('diamond',3,1,30)).toBe(1);
+    expect(productionResources('water',52,500,20)).toBe(149);
+    expect(productionResources('oil',7,20,10)).toBe(10);  
+    expect(productionResources('lithium',2,150,10)).toBe(11);
+    expect(productionResources('uranium',52,200,1)).toBe(20);
+    expect(productionResources('missile',52,200,1)).toBe(10);
+    expect(productionResources('jet',52,200,1)).toBe(10);
+    expect(productionResources('infantry',52,200,1)).toBe(8);
+    expect(productionResources('tank',52,200,1)).toBe(12);
 })

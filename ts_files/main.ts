@@ -1,11 +1,12 @@
-import { getLvlToExp, getCurrentLvl, qtyTroops, getDamage, reductionPF, expPerWork, costGun, lvlStatSecs, productionResources } from "./funcs";
+import { getLvlToExp, getCurrentLvl, qtyTroops, getDamage, reductionProductivity, reductionFatigue, expPerWork, costGun, lvlStatSecs, productionResources } from "./funcs";
 
 export {
     getLvlToExp,
     getCurrentLvl,
     qtyTroops,
     getDamage,
-    reductionPF,
+    reductionProductivity,
+    reductionFatigue,
     expPerWork,
     costGun,
     lvlStatSecs,
