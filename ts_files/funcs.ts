@@ -1,16 +1,18 @@
-export const getCurrentLvl = (y:number, round?:boolean) => {
-    if(y>0) {
-      if(round) return Math.floor((((Math.sqrt(100 * (3 * y) + 25) + 50) / 100) * 0.3))
-      return (((Math.sqrt(100 * (3 * y) + 25) + 50) / 100) * 0.3)
-    } 
-    return 1
-  };
+export const getCurrentLvl = (userExp:number, round?:boolean) => {
+  const result = (((Math.sqrt(100 * (3 * userExp) + 25) + 50) / 100) * 0.3)
+  if (round) return Math.round(result)
+  return result
+};
   
-export const getLvlToExp = (x:number) => {
-  if (x>0) return Math.round(((((((x/0.3)*100)-50)**2)-25)/300))
+export const getLvlToExp = (userLvl:number) => {
+  if (userLvl>0) return Math.round((((((((userLvl)/0.3)*100)-50)**2)-25)/300))
   return 1
 };
 
+export const getExpLeft = (userExp:number) => {
+  const expToLvl = getLvlToExp(getCurrentLvl(userExp)+1)
+  return expToLvl - userExp
+};
 
 export const qtyTroops = (coordination:number) => {
   if(coordination/20<1 && coordination<1){
@@ -19,13 +21,38 @@ export const qtyTroops = (coordination:number) => {
   return Math.floor(coordination/20);
 };
 
-export const getDamage = (level:number, strength:number, troops:number, ) => {
+export const getDamage = (terrainType:string, troopsType:string, level:number, strength:number, troops:number, partyBonusType:string, partyBonus:number, militaryBonus:number, warType:string, opponentStateSecurity?:number) => {
+  const table = {
+    forest: {
+      tanks: -15,
+      planes: -10,
+      infantry: 20,
+      missiles: -5
+    },
+    desert: {
+      tanks: 3,
+      planes: 3,
+      infantry: 5,
+      missiles: 2
+    }
+    marsh: {
+      tanks: 5,
+      planes: 2,
+      infantry: 3,
+      missiles: 4
+    },
+    // Add more terrain types and troop types as needed
+  };
   if(strength<1 || troops<1 || level<1){
     return 1;
   }
-  return Math.floor((strength/13)+troops+(level/15));
-};
+  let result = Math.floor((strength/13)+troops+(level/15));
+  if (partyBonusType === "damage") result += result + partyBonus;
+  if (["coupDeEtat", "revolution"].includes(warType)) result *= ( 1 - opponentStateSecurity/100); 
+  if (warType === 'statesWar') result *= (1 + militaryBonus/100);
 
+  return result
+};
 
 export const reductionProductivity = (coordination:number, pro:boolean, happiness:number) => {
   let result = 0.1 - (coordination/20000)- (0.001*happiness)
@@ -39,8 +66,9 @@ export const reductionFatigue = (coordination:number, pro:boolean, healthSystem:
   return parseFloat(result.toFixed(3));
 }
 
-export const expPerWork = (level:number, education:number) => {
-  const value = Math.floor((education/13 + level/15))
+export const expPerWork = (level:number, education:number, regionHigherEducation:number) => {
+  let value = Math.floor((education/13 + level/15))
+  value = value * (1 + regionHigherEducation/200)
   if (value > 1) return value;
   return 1;
 }
@@ -49,49 +77,74 @@ export const costGun = (factoryLvl:number, pMissiles:number) => {
   return parseFloat(((pMissiles*(6+22+8))*(1-(factoryLvl/1000))).toFixed(2))
 }
 
-export const lvlStatSecs = (strenght:number, education:number) => {
-  if (strenght > 150) return ((strenght*2.5)*(strenght/200)-(education/2))*60
-  return (strenght/2)*60
+export const lvlStatSecs = (strenght:number, education:number, stateEduaction:number) => {
+  let result:number;
+  if (strenght > 150) result = ((strenght*2.5)*(strenght/200)-(education/2))*60
+  result = (strenght/2)*60
+  return result * (1-(stateEduaction/100))
 }
 
-export const productionResources = (resourceType:string, level:number, education:number, factoryLvl:number) => {
-  console.log('entra en la ecuacion almenos')
-  if (resourceType==="diamond") {
-    const result = Math.floor((level/30)+(education/35)+ (factoryLvl/30))
-    if (result > 1) return result;
-    return 1;
+export const productionResources = (resourceType:string, level:number, education:number, factoryLvl:number, partyBonusType:string, partyBonus:number, regionBasicEducation:number) => {
+  const mapValues =(values:number[], keys:string[])=> {
+    return Object.fromEntries(keys.map((key)=>{ return [key, values] }))
   }
-  const naturalResources = ["iron", "coal", "oil", "water"]
-  if (naturalResources.includes(resourceType) ) {
-    const result = Math.floor((level/3)+(education/4)+ (factoryLvl/3))
-    if (result > 1) return result;
-    return 1;
-  }
-  if (resourceType==="lithium") {
-    const result = Math.floor((level/10)+(education/15)+ (factoryLvl/10))
-    if (result > 1) return result;
-    return 1;
-  }
-  if (resourceType==="uranium") {
-    const result = Math.floor((level/9)+(education/14)+ (factoryLvl/9))
-    if (result > 1) return result;
-    return 1;
-  }
-  const airWeapons = ["missile", "jet"]
-  if (airWeapons.includes(resourceType) ) {
-    console.log('entro a las armas estas')
-    const result = Math.floor((level/20)+(education/25)+ (factoryLvl/20))
-    if (result > 1) return result;
-    return 1;
-  }
-  if (resourceType==="infantry") {
-    const result = Math.floor((level/25)+(education/30)+ (factoryLvl/25))
-    if (result > 1) return result;
-    return 1;
-  }
-  if (resourceType==="tank") {
-    const result = Math.floor((level/17)+(education/22)+ (factoryLvl/17))
-    if (result > 1) return result;
-    return 1;
-  }
+  const ratios = {
+    diamond: [30, 35, 30],
+    iron: [3, 4, 3],
+    lithium: [10, 15, 10],
+    uranium: [9, 14, 9],
+    infantry: [25, 30, 25],
+    tank: [17, 22, 17],
+    ...mapValues([20,25,20], ['missile', 'jet']),
+    ...mapValues([3,4,3], ['iron', 'coal', 'oil', 'water']),
+  };
+  const [levelMod, eduMod, factoryMod] = ratios[resourceType]
+  let result = Math.floor((level/levelMod)+(education/eduMod)+ (factoryLvl/factoryMod))
+  if (partyBonusType === 'production') result += result * partyBonus
+  result += result * (1 + regionBasicEducation/100)
+  if (result > 1) return result;
+  return 1
 }
+
+export const partyCurrentLevel = (partyTotalDamage:number, round?:boolean) => {
+  const result = (((Math.sqrt(100 * (3 * partyTotalDamage) + 25) + 50) / 100) * 0.3)*30
+  if (result < 1) return 1;
+  if(round) return Math.floor(result)
+  return result
+};
+
+export const getPartyLvlToExp = (partyLvl:number) => {
+  if (partyLvl>0) return Math.round((((((((partyLvl/30)/0.3)*100)-50)**2)-25)/300))
+  return 1
+};
+
+export const getPartyExpLeft = (partyTotalDamage:number) => {
+  const expToLvl = getPartyLvlToExp(partyCurrentLevel(partyTotalDamage)+1)
+  return expToLvl - partyTotalDamage
+};
+
+export const maxPartyMembers = (partyTotalDamage:number) => {
+  return Math.floor(partyCurrentLevel(partyTotalDamage, true) * 10)
+}
+
+export const partyBonus = (partyTotalDamage:number) => {
+  const partyLevel = partyCurrentLevel(partyTotalDamage, true)
+  console.log('party level in here', partyLevel)
+  return Math.floor(partyLevel * 0.25)
+}
+
+export const getFactoryLevel = (factoryExp:number, round?:boolean) => {
+  const result = (((Math.sqrt(100 * (3 * factoryExp) + 25) + 50) / 100) * 0.3)*50
+  if (round) return Math.round(result)*50
+  return result
+};
+  
+export const getFactoryExp = (factoryLevel:number) => {
+  if (factoryLevel>0) return Math.round((((((((factoryLevel/50)/0.3)*100)-50)**2)-25)/300))
+  return 1
+};
+
+export const getFactoryExpLeft = (factoryExp:number) => {
+  const expToLvl = getFactoryExp(getFactoryLevel(factoryExp)+1)
+  return expToLvl - factoryExp
+};
